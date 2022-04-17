@@ -16,13 +16,17 @@ class FrameService {
 
   factory FrameService() {
     var topic = "topic";
-    var json = '{"params":{"vw0":65,"v100":1}}';
+    var json =
+        '{"params":{"vw0":237,"vw2":364,"v100":1,"v101":1,"v102":1,"v103":1}}';
     _singleton.mqttService
         .emit("received", null, {"topic": topic, "json": json});
-    _singleton.setTWodyTest = 23.4;
-    _singleton.setTOtoczTest = 28.9;
-    _singleton.setPWodyTest = 180;
-    _singleton.setSendAll();
+    print(_singleton.getGetTemperaturaWodyC());
+    print(_singleton.getGetTemperaturaOtoczeniaC());
+    print(_singleton.getSetOswietlenie());
+    _singleton.setSetTWodyTestC(23.4);
+    _singleton.setSetTOtoczTestC(28.9);
+    _singleton.setSetPWodyTestCm(180);
+    _singleton.setSetSendAll();
     return _singleton;
   }
 
@@ -61,79 +65,68 @@ class FrameService {
     VMap.SetPWodyTest: 0, //  R
   };
 
-  double get getTemperaturaWodyC => params[VMap.GetTWody]! / 10.0;
+  double getGetTemperaturaWodyC() => params[VMap.GetTWody]! / 10.0;
 
-  double get getTemperaturaOtoczeniaC => params[VMap.GetTOtocz]! / 10.0;
+  double getGetTemperaturaOtoczeniaC() => params[VMap.GetTOtocz]! / 10.0;
 
-  double get getPoziomWodyCm => params[VMap.GetPWody]!.toDouble();
+  double getGetPoziomWodyCm() => params[VMap.GetPWody]!.toDouble();
 
-  double get setTemperaturaWodyC => params[VMap.SetTWody]! / 10.0;
+  double getSetTemperaturaWodyC() => params[VMap.SetTWody]! / 10.0;
 
-  double get setTemperaturaOtoczeniaC => params[VMap.SetTOtocz]! / 10.0;
+  double getSetTemperaturaOtoczeniaC() => params[VMap.SetTOtocz]! / 10.0;
 
-  bool get setOswietlenie => params[VMap.SetOswietlenie]! == 1;
+  bool getSetOswietlenie() => params[VMap.SetOswietlenie]! == 1;
 
-  bool get setRoleta => params[VMap.SetRoleta]! == 1;
+  bool getSetRoleta() => params[VMap.SetRoleta]! == 1;
 
-  bool get setFiltr => params[VMap.SetFiltr]! == 1;
+  bool getSetFiltr() => params[VMap.SetFiltr]! == 1;
 
-  bool get setAtrakcja => params[VMap.SetAtrakcja]! == 1;
+  bool getSetAtrakcja() => params[VMap.SetAtrakcja]! == 1;
 
-  bool get setGrzanie => params[VMap.SetGrzanie]! == 1;
+  bool getSetGrzanie() => params[VMap.SetGrzanie]! == 1;
 
-  bool get getOswietlenie => params[VMap.GetOswietlenie]! == 1;
+  bool getGetOswietlenie() => params[VMap.GetOswietlenie]! == 1;
 
-  bool get getRoleta => params[VMap.GetRoleta]! == 1;
+  bool getGetRoleta() => params[VMap.GetRoleta]! == 1;
 
-  bool get getFiltr => params[VMap.GetFiltr]! == 1;
+  bool getGetFiltr() => params[VMap.GetFiltr]! == 1;
 
-  bool get getAtrakcja => params[VMap.GetAtrakcja]! == 1;
+  bool getGetAtrakcja() => params[VMap.GetAtrakcja]! == 1;
 
-  bool get getGrzanie => params[VMap.GetGrzanie]! == 1;
+  bool getGetGrzanie() => params[VMap.GetGrzanie]! == 1;
 
-  set setTemperaturaWodyC(double value) {}
+  setSetTemperaturaWodyC(double value) =>
+      publishDouble(VMap.SetTWody, 10.0 * value);
 
-  set setTemperaturaOtoczeniaC(double value) {}
+  setSetTemperaturaOtoczeniaC(double value) =>
+      publishDouble(VMap.SetTOtocz, 10.0 * value);
 
-  setSendAll() {
+  setSetSendAll() {
     final rng = Random();
     final value = rng.nextInt(65535);
     final chain = ChainMap()..addInt(VMap.SetSendAll, value);
     publishChain(chain);
   }
 
-  set setOswietlenie(bool value) {}
+  setSetOswietlenieH() => publishBool(VMap.SetOswietlenie, true);
 
-  set setRoleta(bool value) {}
+  setSetRoletaH() => publishBool(VMap.SetRoleta, true);
 
-  set setFiltr(bool value) {}
+  setSetFiltrH() => publishBool(VMap.SetFiltr, true);
 
-  set setAtrakcja(bool value) {}
+  setSetAtrakcjaH() => publishBool(VMap.SetAtrakcja, true);
 
-  set setGrzanie(bool value) {}
+  setSetGrzanieH() => publishBool(VMap.SetGrzanie, true);
 
   // TESTY
-  set setTWodyTest(double value) {
-    final val = (10.0 * value + 650) ~/ 1.25;
-    final chain = ChainMap()..addInt(VMap.SetTWodyTest, val);
-    publishChain(chain);
-  }
+  setSetTWodyTestC(double value) =>
+      publishDouble(VMap.SetPWodyTest, (10.0 * value + 650) / 1.25);
 
-  set setTOtoczTest(double value) {
-    final val = (10.0 * value + 526) ~/ 1.13;
-    final chain = ChainMap()..addInt(VMap.SetTOtoczTest, val);
-    publishChain(chain);
-  }
+  setSetTOtoczTestC(double value) =>
+      publishDouble(VMap.SetPWodyTest, (10.0 * value + 526) / 1.13);
 
-  set setPWodyTest(double value) {
-    final val = (value + 50) ~/ 0.25;
-    final chain = ChainMap()..addInt(VMap.SetPWodyTest, val);
-    publishChain(chain);
-  }
-
-  // VMap.SetTWodyTest: 0, //  R
-  // VMap.SetTOtoczTest: 0, // R
-  // VMap.SetPWodyTest: 0, //  R
+  setSetPWodyTestCm(double value) =>
+      publishDouble(VMap.SetPWodyTest, (value + 50) / 0.25);
 
   void received(Event ev, Object? context) {
     final data = ev.eventData as Map<String, String>;
@@ -157,6 +150,7 @@ class FrameService {
     } on Exception catch (e) {
       print(e);
     }
+    clearAllSetFlags();
   }
 
   void clearAllSetFlags() {
@@ -172,6 +166,30 @@ class FrameService {
     publishChain(chain);
   }
 
+  void publishBool(String vmapKey, bool val) {
+    final chain = ChainMap()..addBool(vmapKey, val);
+    var msg = {"params": chain.map()};
+    print(msg);
+    // Publish msg
+    mqttService.publishMap(msg);
+  }
+
+  void publishInt(String vmapKey, int val) {
+    final chain = ChainMap()..addInt(vmapKey, val);
+    var msg = {"params": chain.map()};
+    print(msg);
+    // Publish msg
+    mqttService.publishMap(msg);
+  }
+
+  void publishDouble(String vmapKey, double val) {
+    final chain = ChainMap()..addDouble(vmapKey, val);
+    var msg = {"params": chain.map()};
+    print(msg);
+    // Publish msg
+    mqttService.publishMap(msg);
+  }
+
   void publishChain(ChainMap chain) {
     var msg = {"params": chain.map()};
     print(msg);
@@ -185,7 +203,9 @@ class FrameService {
 //   mqttService.publishMap(msg);
 // }
 }
-/*
+
+/* NOTE
+Example JSON frame
 {
         "version":      "1.0",
         "params":       {

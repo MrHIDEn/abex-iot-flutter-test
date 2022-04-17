@@ -17,7 +17,7 @@ class ChainMap {
   }
 
   void addDouble(String key, double val) {
-    _map[key] = (val * 10.0).toInt();
+    _map[key] = val.toInt();
   }
 
   void clearFlag(String key) {
