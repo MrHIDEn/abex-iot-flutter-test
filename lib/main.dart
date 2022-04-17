@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'frame.model.dart';
+import 'frame.service.dart';
 import 'mqtt.service.dart';
 
 void main() {
@@ -52,7 +52,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  final _frame = FrameModel();
+  final _frame = FrameService();
   final _mqtt = MqttService();
 
   void _incrementCounter() {

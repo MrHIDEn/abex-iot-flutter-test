@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:math';
+
+import 'package:eventify/eventify.dart';
 
 import 'chain-map.class.dart';
 import 'json.type.dart';
@@ -6,26 +9,26 @@ import 'mqtt.service.dart';
 import 'vmap.translation.dart';
 
 //TODO zrobic to jako service?
-class FrameModel {
-  FrameModel._internal();
+class FrameService {
+  FrameService._internal();
 
-  static final FrameModel _singleton = FrameModel._internal();
+  static final FrameService _singleton = FrameService._internal();
 
-  factory FrameModel() {
+  factory FrameService() {
     var topic = "topic";
     var json = '{"params":{"vw0":65,"v100":1}}';
     _singleton.mqttService
         .emit("received", null, {"topic": topic, "json": json});
+    _singleton.setTWodyTest = 23.4;
+    _singleton.setTOtoczTest = 28.9;
+    _singleton.setPWodyTest = 180;
+    _singleton.setSendAll();
     return _singleton;
   }
 
   final MqttService mqttService = MqttService()
     ..on("received", null, (ev, context) {
-      final data = ev.eventData as Map<String, String>;
-      final topic = data["topic"] ?? "";
-      final json = data["json"] ?? "";
-      print("topic: $topic, json: '$json'");
-      _singleton.update(json);
+      _singleton.received(ev, context);
     });
 
   int? id;
@@ -92,7 +95,12 @@ class FrameModel {
 
   set setTemperaturaOtoczeniaC(double value) {}
 
-  set setSendAll(int value) {}
+  setSendAll() {
+    final rng = Random();
+    final value = rng.nextInt(65535);
+    final chain = ChainMap()..addInt(VMap.SetSendAll, value);
+    publishChain(chain);
+  }
 
   set setOswietlenie(bool value) {}
 
@@ -105,18 +113,35 @@ class FrameModel {
   set setGrzanie(bool value) {}
 
   // TESTY
-  set setTWodyTest(double value) {}
+  set setTWodyTest(double value) {
+    final val = (10.0 * value + 650) ~/ 1.25;
+    final chain = ChainMap()..addInt(VMap.SetTWodyTest, val);
+    publishChain(chain);
+  }
 
-  set setTOtoczTest(double value) {}
+  set setTOtoczTest(double value) {
+    final val = (10.0 * value + 526) ~/ 1.13;
+    final chain = ChainMap()..addInt(VMap.SetTOtoczTest, val);
+    publishChain(chain);
+  }
 
   set setPWodyTest(double value) {
-    final chain = ChainMap()..addInt(VMap.SetPWodyTest, value.toInt());
+    final val = (value + 50) ~/ 0.25;
+    final chain = ChainMap()..addInt(VMap.SetPWodyTest, val);
     publishChain(chain);
   }
 
   // VMap.SetTWodyTest: 0, //  R
   // VMap.SetTOtoczTest: 0, // R
   // VMap.SetPWodyTest: 0, //  R
+
+  void received(Event ev, Object? context) {
+    final data = ev.eventData as Map<String, String>;
+    final topic = data["topic"] ?? "";
+    final json = data["json"] ?? "";
+    print("topic: $topic, json: '$json'");
+    _singleton.update(json);
+  }
 
   void update(String json) {
     try {
@@ -149,15 +174,16 @@ class FrameModel {
 
   void publishChain(ChainMap chain) {
     var msg = {"params": chain.map()};
+    print(msg);
     // Publish msg
     mqttService.publishMap(msg);
   }
 
-  void publishMap(JsonInt map) {
-    var msg = {"params": map};
-    // Publish msg
-    mqttService.publishMap(msg);
-  }
+// void publishMap(JsonInt map) {
+//   var msg = {"params": map};
+//   // Publish msg
+//   mqttService.publishMap(msg);
+// }
 }
 /*
 {
