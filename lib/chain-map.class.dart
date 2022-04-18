@@ -40,6 +40,8 @@ class ChainMap {
     }
   }
 
+  int get length => _map.length;
+
   Map<String, int> map() {
     return _map;
   }

@@ -15,24 +15,29 @@ class FrameService {
   static final FrameService _singleton = FrameService._internal();
 
   factory FrameService() {
-    var topic = "topic";
-    var json =
-        '{"params":{"vw0":237,"vw2":364,"v100":1,"v101":1,"v102":1,"v103":1}}';
-    _singleton.mqttService
-        .emit("received", null, {"topic": topic, "json": json});
-    print(_singleton.getGetTemperaturaWodyC());
-    print(_singleton.getGetTemperaturaOtoczeniaC());
-    print(_singleton.getSetOswietlenie());
-    _singleton.setSetTWodyTestC(23.4);
-    _singleton.setSetTOtoczTestC(28.9);
-    _singleton.setSetPWodyTestCm(180);
-    _singleton.setSetSendAll();
+    // var topic = "abex-basen-1/r/all";
+    // var json =
+    //     '{"params":{"vw0":237,"vw2":364,"v100":1,"v101":1,"v102":1,"v103":1}}';
+    // _singleton.mqttService
+    //     .emit("received", null, {"topic": topic, "json": json});
+    // print(_singleton.getGetTemperaturaWodyC());
+    // print(_singleton.getGetTemperaturaOtoczeniaC());
+    // print(_singleton.getSetOswietlenie());
+    // _singleton.setSetTWodyTestC(23.4);
+    // _singleton.setSetTOtoczTestC(28.9);
+    // _singleton.setSetPWodyTestCm(180);
+    // _singleton.setSetSendAll();
+    // _singleton.setSetSendAll();
+    // _singleton.setSetSendAll();
     return _singleton;
   }
 
   final MqttService mqttService = MqttService()
+    ..on("ready", null, (ev, context) {
+      _singleton.ready();
+    })
     ..on("received", null, (ev, context) {
-      _singleton.received(ev, context);
+      _singleton.received(ev);
     });
 
   int? id;
@@ -128,11 +133,18 @@ class FrameService {
   setSetPWodyTestCm(double value) =>
       publishDouble(VMap.SetPWodyTest, (value + 50) / 0.25);
 
-  void received(Event ev, Object? context) {
+  void ready() {
+    print("//FS ready");
+    setSetSendAll();
+  }
+
+  void received(Event ev) {
     final data = ev.eventData as Map<String, String>;
-    final topic = data["topic"] ?? "";
+    // final topic = data["topic"] ?? "";
+    // final json = data["json"] ?? "";
+    // print("//FS topic: $topic, json: '$json'");
+    print("//FS received");
     final json = data["json"] ?? "";
-    print("topic: $topic, json: '$json'");
     _singleton.update(json);
   }
 
@@ -149,11 +161,13 @@ class FrameService {
       print(params);
     } on Exception catch (e) {
       print(e);
+      // emit("error", null, "Receive failed"); //ograc to?
     }
     clearAllSetFlags();
   }
 
   void clearAllSetFlags() {
+    print("//FS clear flags");
     // Send 0 to all when 1 set flags [100-104]
     final chain = ChainMap(params)
       ..clearFlags([
@@ -169,39 +183,27 @@ class FrameService {
   void publishBool(String vmapKey, bool val) {
     final chain = ChainMap()..addBool(vmapKey, val);
     var msg = {"params": chain.map()};
-    print(msg);
-    // Publish msg
     mqttService.publishMap(msg);
   }
 
   void publishInt(String vmapKey, int val) {
     final chain = ChainMap()..addInt(vmapKey, val);
     var msg = {"params": chain.map()};
-    print(msg);
-    // Publish msg
     mqttService.publishMap(msg);
   }
 
   void publishDouble(String vmapKey, double val) {
     final chain = ChainMap()..addDouble(vmapKey, val);
-    var msg = {"params": chain.map()};
-    print(msg);
-    // Publish msg
-    mqttService.publishMap(msg);
+    var map = {"params": chain.map()};
+    mqttService.publishMap(map);
   }
 
   void publishChain(ChainMap chain) {
-    var msg = {"params": chain.map()};
-    print(msg);
-    // Publish msg
-    mqttService.publishMap(msg);
+    if(chain.length > 0) {
+      var map = {"params": chain.map()};
+      mqttService.publishMap(map);
+    }
   }
-
-// void publishMap(JsonInt map) {
-//   var msg = {"params": map};
-//   // Publish msg
-//   mqttService.publishMap(msg);
-// }
 }
 
 /* NOTE

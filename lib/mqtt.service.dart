@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
+// import 'dart:io';
 
 // https://pub.dev/packages/eventify/install
-import 'package:typed_data/typed_data.dart' as typed;
+// import 'package:typed_data/typed_data.dart' as typed;
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:eventify/eventify.dart';
@@ -25,13 +25,20 @@ class MqttService extends EventEmitter {
     if (username != null) _singleton.username = username;
     if (password != null) _singleton.password = password;
 
-    _singleton._reconnect();
+    _singleton._timer ??= // 20, 30s?
+        Timer.periodic(const Duration(seconds: 5), _singleton.checkConnect);
+
+    final bool reconnect = broker != null ||
+        clientId != null ||
+        username != null ||
+        password != null;
+    _singleton._reconnect(reconnect);
 
     return _singleton;
   }
 
   @override
-  String toString() => "$MqttService $broker";
+  String toString() => '$MqttService "$broker", "$clientId"';
 
   // Config
   String broker = "";
@@ -40,154 +47,182 @@ class MqttService extends EventEmitter {
   String password = "";
   final subscribeTopic = "abex-basen-1/r/all";
   final publishTopic = "abex-basen-1/w/all";
-  MqttClient? client;
+  MqttClient? _client;
 
-  bool get connected =>
-      client?.connectionStatus!.state == MqttConnectionState.connected;
+  // bool get connected =>
+  // _client?.connectionStatus!.state == MqttConnectionState.connected;
+  bool get _accepted =>
+      _client?.connectionStatus!.returnCode ==
+      MqttConnectReturnCode.connectionAccepted;
 
-  Future<bool> _reconnect() async {
-    client?.disconnect();
-    return await connect();
-  }
+  Timer? _timer;
 
-  Future<bool> connect() async {
-    if (connected) {
-      // Already connected
-      return await _reconnect();
-    } else {
-      client = await _connect();
-      return client != null;
+  bool _preConnecting = false;
+
+  Future checkConnect(Timer timer) async {
+    if (!_preConnecting && !_accepted) {
+      _preConnecting = true;
+      print('//MQ try connect');
+      _client?.disconnect();
+      _listener?.cancel();
+      // await _reconnect(true);
+      _preConnecting = false;
     }
   }
 
-  Future<MqttClient?> _connect() async {
+  Future<void> _reconnect(bool reconnect) async {
+    print("//MQ _reconnect: $reconnect");
+    if (reconnect) {
+      _client?.disconnect();
+      _client = null;
+      await _connect();
+    }
+  }
+
+  bool _connecting = false;
+
+  Future<void> _connect() async {
     if (broker == "" || clientId == "") {
       emit("error", null, "Provide broker url and client id.");
-      return null;
+      return;
+    }
+    if (username == "" || password == "") {
+      emit("error", null, "Provide user mane and password.");
+      return;
     }
 
-    // Connect
-    MqttClient? client = MqttClient(broker, clientId)
-      ..autoReconnect = true
-      ..setProtocolV311()
-      ..logging(on: true)
-      ..keepAlivePeriod = 60
-      ..onConnected = _onConnected
-      ..onDisconnected = _onDisconnected
-      ..onSubscribed = _onSubscribed
-      ..onAutoReconnect = _onAutoReconnect
-      ..onAutoReconnected = _onAutoReconnected;
-      // ..onUnsubscribed = _onUnsubscribed    // @MqttServerClient
-      // ..onSubscribeFail = _onSubscribeFail; // @MqttServerClient
+    if (_connecting) {
+      return;
+    }
+    _connecting = true;
 
-    // /// If the mqtt connection lost
-    // /// MqttBroker publish this message on this topic.
-    // final mqttMsg = MqttConnectMessage()
-    //     .withWillMessage('connection-failed')
-    //     .withWillTopic('willTopic')
-    //     .startClean()
-    //     .withWillQos(MqttQos.atLeastOnce)
-    //     .withWillTopic('failed');
-    // client.connectionMessage = mqttMsg;
-
-    // Last will
-    // final MqttConnectMessage connMess = MqttConnectMessage()
-    //     .authenticateAs(connectJson['username'], connectJson['key'])
-    //     .withClientIdentifier('myClientID')
-    //     .keepAliveFor(60) // Must agree with the keep alive set above or not set
-    //     .withWillTopic(
-    //     'willtopic') // If you set this you must set a will message
-    //     .withWillMessage('My Will message')
-    //     .startClean() // Non persistent session for testing
-    //     .withWillQos(MqttQos.atMostOnce);
-    // log.info('Adafruit client connecting....');
-    // client.connectionMessage = connMess;
-
+    /// Create connection
     try {
-      await client.connect(username, password);
-      // } on Exception catch (e) {
-    } on Exception {
-      client.disconnect();
-      client = null;
-      return null;
+      _client = MqttServerClient(broker, clientId)
+
+        /// Configs
+        // ..logging(on: true)
+        ..onAutoReconnect = _onAutoReconnect
+        ..onAutoReconnected = _onAutoReconnected
+        ..onUnsubscribed = _onUnsubscribed
+        ..autoReconnect = true
+        ..setProtocolV311()
+        ..keepAlivePeriod = 60
+        ..onConnected = _onConnected
+        ..onDisconnected = _onDisconnected
+        ..onSubscribed = _onSubscribed
+        ..onSubscribeFail = _onSubscribeFail;
+    } on Exception catch (e) {
+      // } on Exception {
+      _connecting = false;
+      emit("error", null, "Establish connection failed");
+      print(e);
+      return;
     }
 
-    /// Check we are connected
-    if (connected) {
-      // Client connected
-    } else {
-      client.disconnect();
-      client = null;
+    /// Connect
+    try {
+      final status = await _client?.connect(username, password);
+      print('//MQ accepted "$_accepted"');
+    } on Exception catch (e) {
+      // } on Exception {
+      _connecting = false;
+      emit("error", null, "Connect failed");
+      print(e);
+      _client?.disconnect();
+      _client = null;
+      return;
     }
 
-    return client;
+    _connecting = false;
+
+    return;
   }
 
   void _onSubscribed(String topic) {
-    emit("info", null, "Ready");
+    print("//MQ on subscribed: $topic");
+    // emit("subscribed", null, topic);
+    emit("ready");
   }
 
   void _onDisconnected() {
-    emit("info", null, "Disconnected");
-    client?.disconnect();
+    print("//MQ on disconnected");
+    _listener?.cancel();
+    emit("info", null, "disconnected");
   }
 
   void _onConnected() async {
+    print("//MQ on connected");
     await subscribe();
-    emit("info", null, "Connected");
+    emit("info", null, "connected");
   }
 
   void _onAutoReconnect() {
-    emit("info", null, "Reconnect");
+    print("//MQ on reconnect");
+    emit("reconnect");
   }
 
-  void _onAutoReconnected() async {
-    await subscribe();
-    emit("info", null, "Reconnected");
+  void _onAutoReconnected() {
+    print("//MQ on auto reconnect");
+    // await subscribe(); //??
+    emit("auto-reconnect");
   }
 
-  void _onUnsubscribed() {
-    emit("info", null, "Unsubscribed");
+  void _onUnsubscribed(String? topic) {
+    print('//MQ on unsubscribed "$topic');
+    emit("unsubscribed", null, topic ?? "");
   }
 
-  void _onSubscribeFail() {
-    emit("error", null, "Subscribe fail");
+  void _onSubscribeFail(String topic) {
+    print('//MQ subscribe fail "$topic"');
+    emit("error", null, "Subscribe failed");
+    _client?.disconnect();
   }
+
+  StreamSubscription? _listener;
 
   Future subscribe() async {
+    print("//MQ subscribe");
+
+    _listener?.cancel();
+
     /// The client has a change notifier object(see the Observable class) which we then listen to to get
     /// notifications of published updates to each subscribed topic.
-    client?.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? mrmList) {
-      // final msg = msgList.where((msg) => msg.topic == subscribeTopic).toList();
-      final mrm = mrmList?[0];
-      final topic = mrm?.topic;
-      final mqttMessage = mrm?.payload as MqttPublishMessage;
-      final json =
-          MqttPublishPayload.bytesToStringAsString(mqttMessage.payload.message);
-      emit("received", null , {"topic": topic, "json": json});
+    _listener = _client?.updates!
+        .listen((List<MqttReceivedMessage<MqttMessage>> msgList) {
+      try {
+        final msg = msgList.first;
+
+        final message = (msg.payload as MqttPublishMessage).payload.message;
+        final json = MqttPublishPayload.bytesToStringAsString(message);
+
+        emit("received", null, {"topic": msg.topic, "json": json});
+      } on Exception catch (e) {
+        // } on Exception {
+        print(e);
+        emit("error", null, "Receive failed");
+      }
     });
 
-    client?.subscribe(subscribeTopic, MqttQos.atMostOnce);
+    _client?.subscribe(subscribeTopic, MqttQos.atMostOnce);
     return true;
   }
 
   void publishMap(Json map) {
+    print("//MQ publishMap, $map");
+    print(map);
     publishJson(jsonEncode(map));
   }
 
   void publishJson(String json) {
-    if (!connected) {
+    print("//MQ publishJson");
+    if (!_accepted) {
       emit("info", null, "Connected");
       return;
     }
     final builder = MqttClientPayloadBuilder();
     builder.addString(json);
-    client?.publishMessage(publishTopic, MqttQos.atMostOnce, builder.payload!);
-  }
-
-  // TEST
-  int increment(int v) {
-    return v + 2;
+    _client?.publishMessage(publishTopic, MqttQos.atMostOnce, builder.payload!);
   }
 }
 

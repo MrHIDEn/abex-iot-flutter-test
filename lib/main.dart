@@ -4,6 +4,7 @@ import 'frame.service.dart';
 import 'mqtt.service.dart';
 
 void main() {
+  print("//Main");
   runApp(const MyApp());
 }
 
@@ -13,6 +14,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    print("//MyApp.Widget");
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -53,7 +55,11 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   final _frame = FrameService();
-  final _mqtt = MqttService();
+  final _mqtt = MqttService(
+      broker: "192.168.233.23",
+      clientId: "abex-mobile-1",
+      username: "abex-mobile-1",
+      password: "Q9SWWyPwYX2ebKSu");
 
   void _incrementCounter() {
     setState(() {
@@ -62,14 +68,13 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      // _counter++;
-      // _counter += 3;
-      _counter = _mqtt.increment(_counter);
+      _counter++;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    print("//MyHomePage.Widget");
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
