@@ -112,8 +112,6 @@ class FrameService {
     final value = rng.nextInt(65535);
     final chain = ChainMap()..addInt(VMap.SetSendAll, value);
     publishChain(chain);
-    //TEST
-    setSetOswietlenieH();
   }
 
   setSetOswietlenieH() => publishBool(VMap.SetOswietlenie, true);
@@ -139,6 +137,8 @@ class FrameService {
   void ready() {
     print("//FS ready");
     setSetSendAll();
+    //TEST
+    setSetOswietlenieH();
   }
 
   void received(Event ev) {
@@ -179,10 +179,10 @@ class FrameService {
         VMap.SetAtrakcja, //    monostable
         // VMap.SetGrzanie, //  bistable
       ]);
-    Timer(const Duration(milliseconds: 4000), () {
-      print("//FS clear flags, ${chain.length}");
-      publishChain(chain);
-    });
+    // Timer(const Duration(milliseconds: 4000), () {
+    print("//FS clear flags, ${chain.length}");
+    publishChain(chain);
+    // });
   }
 
   void publishBool(String vmapKey, bool val) {
