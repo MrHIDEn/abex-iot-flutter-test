@@ -46,13 +46,14 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  //const
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -63,16 +64,23 @@ class MyHomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
+  final _frame = FrameService();
+
   final String title;
+  // final String tWodyC = "0";
+  // double get tWodyC => _frame.getGetTemperaturaWodyC();
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   final _storage = StorageService();
   final _frame = FrameService();
+  
+  int _counter = 0;
+  double _tWodyC = 0;
+
   // MqttService? _mqtt;
   // final _mqtt = MqttService(
   //     broker: "192.168.233.23",
@@ -89,6 +97,28 @@ class _MyHomePageState extends State<MyHomePage> {
   //     password: config["password"],
   //   );
   // }
+  _MyHomePageState() {
+    // _frame.on("update", null, (ev, context) {
+    //   print('//MH update');
+    //   print(ev);
+    //   print(context);
+    //   // setState(() {
+    //   //   // Put your codes here.
+    //   // });
+    // });
+    _frame.onUpdated = onUpdated;
+  }
+
+  void onUpdated() {
+    print('//MH on updated');
+    setState(() {
+      _tWodyC = _frame.getGetTemperaturaWodyC();
+    });
+  }
+
+  void _refresh() {
+    _frame.refresh(0);
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -100,12 +130,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
       // _counter++;
       _counter = _frame.refresh(_counter);
+      // _tWodyC = _frame.getGetTemperaturaWodyC();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    print("//MyHomePage.Widget");
+    print("//MH build");
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -139,6 +170,27 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            //--
+            Text(
+              'Temp. Wody: ${_frame.getGetTemperaturaWodyC()},',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Temp. Wody: $_tWodyC,',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _frame.refresh(0);
+              },
+              child: const Text('Refresh', style: TextStyle(fontSize: 20)),
+              style: ElevatedButton.styleFrom(onPrimary: Colors.green),
+            ),
+            //--
             const Text(
               'You have pushed the button this many times:',
             ),

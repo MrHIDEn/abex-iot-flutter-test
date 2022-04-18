@@ -1,16 +1,15 @@
-import 'dart:convert';
 import 'dart:math';
-// import 'dart:async';
-
 import 'package:eventify/eventify.dart';
-
 import 'chain-map.class.dart';
 import 'json.type.dart';
 import 'mqtt.service.dart';
 import 'vmap.translation.dart';
 
+typedef FrameCallback = void Function();
+
 //TODO zrobic to jako service?
-class FrameService {
+// extends EventEmitter
+class FrameService  {
   FrameService._internal();
 
   static final FrameService _singleton = FrameService._internal();
@@ -31,7 +30,7 @@ class FrameService {
   String? version;
   String? method;
 
-  JsonInt params = {
+  final JsonInt params = {
     VMap.getTWody: 0, //       R
     VMap.getTOtocz: 0, //      R
     VMap.getPWody: 0, //       R
@@ -58,34 +57,44 @@ class FrameService {
   };
 
   double getGetTemperaturaWodyC() => params[VMap.getTWody]! / 10.0;
-
   double getGetTemperaturaOtoczeniaC() => params[VMap.getTOtocz]! / 10.0;
-
   double getGetPoziomWodyCm() => params[VMap.getPWody]!.toDouble();
-
   double getSetTemperaturaWodyC() => params[VMap.setTWody]! / 10.0;
 
   double getSetTemperaturaOtoczeniaC() => params[VMap.setTOtocz]! / 10.0;
-
   bool getSetOswietlenie() => params[VMap.setOswietlenie]! == 1;
-
   bool getSetRoleta() => params[VMap.setRoleta]! == 1;
-
   bool getSetFiltr() => params[VMap.setFiltr]! == 1;
 
   bool getSetAtrakcja() => params[VMap.setAtrakcja]! == 1;
-
   bool getSetGrzanie() => params[VMap.setGrzanie]! == 1;
-
   bool getGetOswietlenie() => params[VMap.getOswietlenie]! == 1;
-
   bool getGetRoleta() => params[VMap.getRoleta]! == 1;
 
   bool getGetFiltr() => params[VMap.getFiltr]! == 1;
-
   bool getGetAtrakcja() => params[VMap.getAtrakcja]! == 1;
-
   bool getGetGrzanie() => params[VMap.getGrzanie]! == 1;
+
+  // final Map<String, Function> values = {
+  //   VMap.getTWody: _singleton.getGetTemperaturaWodyC,
+  //   VMap.getTOtocz: _singleton.getGetTemperaturaOtoczeniaC,
+  //   VMap.getPWody: _singleton.getGetPoziomWodyCm,
+  //   VMap.setTWody: _singleton.getSetTemperaturaWodyC,
+  //
+  //   VMap.setTOtocz: _singleton.getSetTemperaturaOtoczeniaC,
+  //   VMap.setOswietlenie: _singleton.getSetOswietlenie,
+  //   VMap.setRoleta: _singleton.getSetRoleta,
+  //   VMap.setFiltr: _singleton.getSetFiltr,
+  //
+  //   VMap.setAtrakcja: _singleton.getSetAtrakcja,
+  //   VMap.setGrzanie: _singleton.getSetGrzanie,
+  //   VMap.getOswietlenie: _singleton.getGetOswietlenie,
+  //   VMap.getRoleta: _singleton.getGetRoleta,
+  //
+  //   VMap.getFiltr: _singleton.getGetFiltr,
+  //   VMap.getAtrakcja: _singleton.getGetAtrakcja,
+  //   VMap.getGrzanie: _singleton.getGetGrzanie,
+  // };
 
   setSetTemperaturaWodyC(double value) =>
       publishDouble(VMap.setTWody, 10.0 * value);
@@ -135,6 +144,8 @@ class FrameService {
     _singleton.setSetPWodyTestCm(181);
   }
 
+  FrameCallback? onUpdated;
+
   void received(Event ev) {
     final data = ev.eventData as Map;
     final topic = data["topic"] ?? "";
@@ -149,8 +160,13 @@ class FrameService {
       print('//FS update() params: "$paramsMap"');
       paramsMap.forEach((key, val) {
         /// Update only expected values
-        if (params.containsKey(key)) params[key] = val;
+        if (params.containsKey(key)) {
+          final update = params[key] != val;
+          params[key] = val;
+          // emit("update", key, val);
+        }
       });
+      onUpdated!();
     } on Exception catch (e) {
       print(e);
       // emit("error", null, "Receive failed"); //ograc to?

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-// https://pub.dev/packages/eventify/install
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:eventify/eventify.dart';
