@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+// import 'dart:async';
 
 import 'package:eventify/eventify.dart';
 
@@ -46,99 +46,102 @@ class FrameService {
   String? method;
 
   JsonInt params = {
-    VMap.GetTWody: 0, //       R
-    VMap.GetTOtocz: 0, //      R
-    VMap.GetPWody: 0, //       R
+    VMap.getTWody: 0, //       R
+    VMap.getTOtocz: 0, //      R
+    VMap.getPWody: 0, //       R
 
-    VMap.SetTWody: 0, //       RW
-    VMap.SetTOtocz: 0, //      RW
-    VMap.SetSendAll: 0, //     RW
+    VMap.setTWody: 0, //       RW
+    VMap.setTOtocz: 0, //      RW
+    VMap.setSendAll: 0, //     RW
 
-    VMap.SetOswietlenie: 0, // RW
-    VMap.SetRoleta: 0, //      RW
-    VMap.SetFiltr: 0, //       RW
-    VMap.SetAtrakcja: 0, //    RW
-    VMap.SetGrzanie: 0, //     RW
+    VMap.setOswietlenie: 0, // RW
+    VMap.setRoleta: 0, //      RW
+    VMap.setFiltr: 0, //       RW
+    VMap.setAtrakcja: 0, //    RW
+    VMap.setGrzanie: 0, //     RW
 
-    VMap.GetOswietlenie: 0, // R
-    VMap.GetRoleta: 0, //      R
-    VMap.GetFiltr: 0, //       R
-    VMap.GetAtrakcja: 0, //    R
-    VMap.GetGrzanie: 0, //     R
+    VMap.getOswietlenie: 0, // R
+    VMap.getRoleta: 0, //      R
+    VMap.getFiltr: 0, //       R
+    VMap.getAtrakcja: 0, //    R
+    VMap.getGrzanie: 0, //     R
 
-    VMap.SetTWodyTest: 0, //  R
-    VMap.SetTOtoczTest: 0, // R
-    VMap.SetPWodyTest: 0, //  R
+    VMap.setTWodyTest: 0, //  R
+    VMap.setTOtoczTest: 0, // R
+    VMap.setPWodyTest: 0, //  R
   };
 
-  double getGetTemperaturaWodyC() => params[VMap.GetTWody]! / 10.0;
+  double getGetTemperaturaWodyC() => params[VMap.getTWody]! / 10.0;
 
-  double getGetTemperaturaOtoczeniaC() => params[VMap.GetTOtocz]! / 10.0;
+  double getGetTemperaturaOtoczeniaC() => params[VMap.getTOtocz]! / 10.0;
 
-  double getGetPoziomWodyCm() => params[VMap.GetPWody]!.toDouble();
+  double getGetPoziomWodyCm() => params[VMap.getPWody]!.toDouble();
 
-  double getSetTemperaturaWodyC() => params[VMap.SetTWody]! / 10.0;
+  double getSetTemperaturaWodyC() => params[VMap.setTWody]! / 10.0;
 
-  double getSetTemperaturaOtoczeniaC() => params[VMap.SetTOtocz]! / 10.0;
+  double getSetTemperaturaOtoczeniaC() => params[VMap.setTOtocz]! / 10.0;
 
-  bool getSetOswietlenie() => params[VMap.SetOswietlenie]! == 1;
+  bool getSetOswietlenie() => params[VMap.setOswietlenie]! == 1;
 
-  bool getSetRoleta() => params[VMap.SetRoleta]! == 1;
+  bool getSetRoleta() => params[VMap.setRoleta]! == 1;
 
-  bool getSetFiltr() => params[VMap.SetFiltr]! == 1;
+  bool getSetFiltr() => params[VMap.setFiltr]! == 1;
 
-  bool getSetAtrakcja() => params[VMap.SetAtrakcja]! == 1;
+  bool getSetAtrakcja() => params[VMap.setAtrakcja]! == 1;
 
-  bool getSetGrzanie() => params[VMap.SetGrzanie]! == 1;
+  bool getSetGrzanie() => params[VMap.setGrzanie]! == 1;
 
-  bool getGetOswietlenie() => params[VMap.GetOswietlenie]! == 1;
+  bool getGetOswietlenie() => params[VMap.getOswietlenie]! == 1;
 
-  bool getGetRoleta() => params[VMap.GetRoleta]! == 1;
+  bool getGetRoleta() => params[VMap.getRoleta]! == 1;
 
-  bool getGetFiltr() => params[VMap.GetFiltr]! == 1;
+  bool getGetFiltr() => params[VMap.getFiltr]! == 1;
 
-  bool getGetAtrakcja() => params[VMap.GetAtrakcja]! == 1;
+  bool getGetAtrakcja() => params[VMap.getAtrakcja]! == 1;
 
-  bool getGetGrzanie() => params[VMap.GetGrzanie]! == 1;
+  bool getGetGrzanie() => params[VMap.getGrzanie]! == 1;
 
   setSetTemperaturaWodyC(double value) =>
-      publishDouble(VMap.SetTWody, 10.0 * value);
+      publishDouble(VMap.setTWody, 10.0 * value);
 
   setSetTemperaturaOtoczeniaC(double value) =>
-      publishDouble(VMap.SetTOtocz, 10.0 * value);
+      publishDouble(VMap.setTOtocz, 10.0 * value);
 
   setSetSendAll() {
     final rng = Random();
     final value = rng.nextInt(65535);
-    final chain = ChainMap()..addInt(VMap.SetSendAll, value);
+    final chain = ChainMap()..addInt(VMap.setSendAll, value);
     publishChain(chain);
   }
 
-  setSetOswietlenieH() => publishBool(VMap.SetOswietlenie, true);
+  setSetOswietlenieH() => publishBool(VMap.setOswietlenie, true);
 
-  setSetRoletaH() => publishBool(VMap.SetRoleta, true);
+  setSetRoletaH() => publishBool(VMap.setRoleta, true);
 
-  setSetFiltrH() => publishBool(VMap.SetFiltr, true);
+  setSetFiltrH() => publishBool(VMap.setFiltr, true);
 
-  setSetAtrakcjaH() => publishBool(VMap.SetAtrakcja, true);
+  setSetAtrakcjaH() => publishBool(VMap.setAtrakcja, true);
 
-  setSetGrzanieH() => publishBool(VMap.SetGrzanie, true);
+  setSetGrzanieH() => publishBool(VMap.setGrzanie, true);
 
   // TESTY
   setSetTWodyTestC(double value) =>
-      publishDouble(VMap.SetPWodyTest, (10.0 * value + 650) / 1.25);
+      publishDouble(VMap.setTWodyTest, (10.0 * value + 650) / 1.25 + .5);
 
   setSetTOtoczTestC(double value) =>
-      publishDouble(VMap.SetPWodyTest, (10.0 * value + 526) / 1.13);
+      publishDouble(VMap.setTOtoczTest, (10.0 * value + 526) / 1.13 + .5);
 
   setSetPWodyTestCm(double value) =>
-      publishDouble(VMap.SetPWodyTest, (value + 50) / 0.25);
+      publishDouble(VMap.setPWodyTest, (value + 50) / 0.25 + .5);
 
   void ready() {
     print("//FS ready");
     setSetSendAll();
     //TEST
     setSetOswietlenieH();
+    _singleton.setSetTWodyTestC(23.4);
+    _singleton.setSetTOtoczTestC(34.5);
+    _singleton.setSetPWodyTestCm(181);
   }
 
   void received(Event ev) {
@@ -173,10 +176,10 @@ class FrameService {
     // Send 0 to all when 1 set flags [100-104]
     final chain = ChainMap(params)
       ..clearFlags([
-        VMap.SetOswietlenie, // monostable
-        VMap.SetRoleta, //      monostable
-        VMap.SetFiltr, //       monostable
-        VMap.SetAtrakcja, //    monostable
+        VMap.setOswietlenie, // monostable
+        VMap.setRoleta, //      monostable
+        VMap.setFiltr, //       monostable
+        VMap.setAtrakcja, //    monostable
         // VMap.SetGrzanie, //  bistable
       ]);
     // Timer(const Duration(milliseconds: 4000), () {
@@ -207,9 +210,14 @@ class FrameService {
   //   }
   // }
 
+  //TODO flaga wymuszania i wymuszanie danych w petli az nie zejdzie
+
   void publishChain(ChainMap chain) {
     if (chain.isNotEmpty) {
-      var map = {"params": chain.map()};
+      // final rng = Random();
+      // final id = rng.nextInt(65535);
+      // final map = {"params": chain.map(), "id": id, "version": "1.0"};
+      final map = {"params": chain.map()};
       mqttService.publishMap(map);
     }
   }

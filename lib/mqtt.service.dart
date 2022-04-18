@@ -121,7 +121,7 @@ class MqttService extends EventEmitter {
     /// Connect
     try {
       final status = await _client?.connect(username, password);
-      print('//MQ accepted "$_accepted"');
+      print('//MQ accepted "$_accepted", ${status?.state.name}');
     } on Exception catch (e) {
       // } on Exception {
       emit("error", null, "Connect failed");
@@ -153,12 +153,12 @@ class MqttService extends EventEmitter {
   }
 
   void _onAutoReconnect() {
-    print("//MQ on reconnect");
+    print("//MQ on auto reconnect");
     emit("reconnect");
   }
 
   void _onAutoReconnected() {
-    print("//MQ on auto reconnect");
+    print("//MQ on auto reconnected");
     // await subscribe(); //??
     emit("auto-reconnect");
   }
@@ -179,8 +179,10 @@ class MqttService extends EventEmitter {
   Future subscribe() async {
     print("//MQ subscribe");
 
-    _listener?.cancel();
+    //_listener?.cancel();
 
+    //TODO moze wyjac to wyzej bo nie trzea restartowac tego chyba ze client sie zmienia
+    //server ma chyba problemy z subscrpcjami !!
     /// The client has a change notifier object(see the Observable class) which we then listen to to get
     /// notifications of published updates to each subscribed topic.
     _listener = _client?.updates!
@@ -204,16 +206,13 @@ class MqttService extends EventEmitter {
   }
 
   void publishMap(Json map) {
+    if (!_accepted) return;
     print("//MQ publishMap, $map");
     publishJson(jsonEncode(map));
   }
 
   void publishJson(String json) {
-    print("//MQ publishJson");
-    if (!_accepted) {
-      emit("info", null, "Connected");
-      return;
-    }
+    if (!_accepted) return;
     final builder = MqttClientPayloadBuilder();
     builder.addString(json);
     _client?.publishMessage(publishTopic, MqttQos.atMostOnce, builder.payload!);
