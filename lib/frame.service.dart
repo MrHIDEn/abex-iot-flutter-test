@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -111,6 +112,8 @@ class FrameService {
     final value = rng.nextInt(65535);
     final chain = ChainMap()..addInt(VMap.SetSendAll, value);
     publishChain(chain);
+    //TEST
+    setSetOswietlenieH();
   }
 
   setSetOswietlenieH() => publishBool(VMap.SetOswietlenie, true);
@@ -167,7 +170,6 @@ class FrameService {
   }
 
   void clearAllSetFlags() {
-    print("//FS clear flags");
     // Send 0 to all when 1 set flags [100-104]
     final chain = ChainMap(params)
       ..clearFlags([
@@ -177,29 +179,36 @@ class FrameService {
         VMap.SetAtrakcja, //    monostable
         // VMap.SetGrzanie, //  bistable
       ]);
-    publishChain(chain);
+    Timer(const Duration(milliseconds: 4000), () {
+      print("//FS clear flags, ${chain.length}");
+      publishChain(chain);
+    });
   }
 
   void publishBool(String vmapKey, bool val) {
     final chain = ChainMap()..addBool(vmapKey, val);
-    var msg = {"params": chain.map()};
-    mqttService.publishMap(msg);
+    publishChain(chain);
   }
 
   void publishInt(String vmapKey, int val) {
     final chain = ChainMap()..addInt(vmapKey, val);
-    var msg = {"params": chain.map()};
-    mqttService.publishMap(msg);
+    publishChain(chain);
   }
 
   void publishDouble(String vmapKey, double val) {
     final chain = ChainMap()..addDouble(vmapKey, val);
-    var map = {"params": chain.map()};
-    mqttService.publishMap(map);
+    publishChain(chain);
   }
 
+  // void publishMap(Json map) {
+  //   if (map.isNotEmpty) {
+  //     map = {"params": map};
+  //     mqttService.publishMap(map);
+  //   }
+  // }
+
   void publishChain(ChainMap chain) {
-    if(chain.length > 0) {
+    if (chain.isNotEmpty) {
       var map = {"params": chain.map()};
       mqttService.publishMap(map);
     }

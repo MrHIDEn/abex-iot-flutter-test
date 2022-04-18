@@ -40,6 +40,8 @@ class ChainMap {
     }
   }
 
+  bool get isNotEmpty => _map.isNotEmpty;
+
   int get length => _map.length;
 
   Map<String, int> map() {

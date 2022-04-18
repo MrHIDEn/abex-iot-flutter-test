@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-// import 'dart:io';
 
 // https://pub.dev/packages/eventify/install
-// import 'package:typed_data/typed_data.dart' as typed;
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:eventify/eventify.dart';
@@ -25,8 +23,8 @@ class MqttService extends EventEmitter {
     if (username != null) _singleton.username = username;
     if (password != null) _singleton.password = password;
 
-    _singleton._timer ??= // 20, 30s?
-        Timer.periodic(const Duration(seconds: 5), _singleton.checkConnect);
+    // _singleton._timer ??= // 20, 30s?
+    //     Timer.periodic(const Duration(seconds: 5), _singleton.checkConnect);
 
     final bool reconnect = broker != null ||
         clientId != null ||
@@ -40,7 +38,7 @@ class MqttService extends EventEmitter {
   @override
   String toString() => '$MqttService "$broker", "$clientId"';
 
-  // Config
+  /// Config
   String broker = "";
   String clientId = "";
   String username = "";
@@ -55,26 +53,26 @@ class MqttService extends EventEmitter {
       _client?.connectionStatus!.returnCode ==
       MqttConnectReturnCode.connectionAccepted;
 
-  Timer? _timer;
+  // Timer? _timer;
 
-  bool _preConnecting = false;
+  // bool _preConnecting = false;
 
-  Future checkConnect(Timer timer) async {
-    if (!_preConnecting && !_accepted) {
-      _preConnecting = true;
-      print('//MQ try connect');
-      _client?.disconnect();
-      _listener?.cancel();
-      // await _reconnect(true);
-      _preConnecting = false;
-    }
-  }
+  // Future checkConnect(Timer timer) async {
+  //   if (!_preConnecting && !_accepted) {
+  //     _preConnecting = true;
+  //     print('//MQ try connect, client: "${_client != null}"');
+  //     // _client?.disconnect();
+  //     // await _reconnect(true);
+  //     // await _connect();
+  //     _preConnecting = false;
+  //   }
+  // }
 
   Future<void> _reconnect(bool reconnect) async {
     print("//MQ _reconnect: $reconnect");
     if (reconnect) {
       _client?.disconnect();
-      _client = null;
+      // _client = null;
       await _connect();
     }
   }
@@ -114,9 +112,9 @@ class MqttService extends EventEmitter {
         ..onSubscribeFail = _onSubscribeFail;
     } on Exception catch (e) {
       // } on Exception {
-      _connecting = false;
       emit("error", null, "Establish connection failed");
       print(e);
+      _connecting = false;
       return;
     }
 
@@ -126,16 +124,13 @@ class MqttService extends EventEmitter {
       print('//MQ accepted "$_accepted"');
     } on Exception catch (e) {
       // } on Exception {
-      _connecting = false;
       emit("error", null, "Connect failed");
       print(e);
       _client?.disconnect();
       _client = null;
-      return;
     }
 
     _connecting = false;
-
     return;
   }
 
@@ -147,7 +142,7 @@ class MqttService extends EventEmitter {
 
   void _onDisconnected() {
     print("//MQ on disconnected");
-    _listener?.cancel();
+    // _listener?.cancel();
     emit("info", null, "disconnected");
   }
 
@@ -210,7 +205,6 @@ class MqttService extends EventEmitter {
 
   void publishMap(Json map) {
     print("//MQ publishMap, $map");
-    print(map);
     publishJson(jsonEncode(map));
   }
 
