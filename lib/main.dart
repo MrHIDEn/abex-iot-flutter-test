@@ -13,7 +13,13 @@ class MyApp extends StatelessWidget {
   // const MyApp({Key? key}) : super(key: key);
   MyApp({Key? key}) : super(key: key) {
     /// Start MQTT with config
-    final config = StorageService().readConfig();
+    startMqttClient();
+  }
+
+  void startMqttClient() async {
+    // final store = StorageService();
+    final config = await StorageService().readConfig();
+    print('//MA config $config');
     MqttService(
       broker: config["broker"],
       clientId: config["clientId"],
@@ -25,7 +31,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    print("//MyApp.Widget");
+    print("//MA build()");
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -91,7 +97,9 @@ class _MyHomePageState extends State<MyHomePage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter++;
+
+      // _counter++;
+      _counter = _frame.refresh(_counter);
     });
   }
 

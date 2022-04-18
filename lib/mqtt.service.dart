@@ -121,7 +121,7 @@ class MqttService extends EventEmitter {
     /// Connect
     try {
       final status = await _client?.connect(username, password);
-      print('//MQ accepted "$_accepted", ${status?.state.name}');
+      print('//MQ accepted "$_accepted", "${status?.state.name}"');
     } on Exception catch (e) {
       // } on Exception {
       emit("error", null, "Connect failed");
@@ -135,7 +135,7 @@ class MqttService extends EventEmitter {
   }
 
   void _onSubscribed(String topic) {
-    print("//MQ on subscribed: $topic");
+    print('//MQ on subscribed: "$topic"');
     // emit("subscribed", null, topic);
     emit("ready");
   }
@@ -174,6 +174,7 @@ class MqttService extends EventEmitter {
     _client?.disconnect();
   }
 
+  // TODO move it to here, or connect
   StreamSubscription? _listener;
 
   Future subscribe() async {
@@ -192,7 +193,7 @@ class MqttService extends EventEmitter {
 
         final message = (msg.payload as MqttPublishMessage).payload.message;
         final json = MqttPublishPayload.bytesToStringAsString(message);
-        final JsonDynamic map = jsonDecode(json);
+        final map = jsonDecode(json);
 
         emit("received", null, {"topic": msg.topic, "map": map});
       } on Exception catch (e) {
