@@ -2,14 +2,25 @@ import 'package:flutter/material.dart';
 
 import 'frame.service.dart';
 import 'mqtt.service.dart';
+import 'storage.service.dart';
 
 void main() {
   print("//Main");
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  // const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key) {
+    /// Start MQTT with config
+    final config = StorageService().readConfig();
+    MqttService(
+      broker: config["broker"],
+      clientId: config["clientId"],
+      username: config["username"],
+      password: config["password"],
+    );
+  }
 
   // This widget is the root of your application.
   @override
@@ -54,12 +65,24 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  final _storage = StorageService();
   final _frame = FrameService();
-  final _mqtt = MqttService(
-      broker: "192.168.233.23",
-      clientId: "abex-mobile-1",
-      username: "abex-mobile-1",
-      password: "Q9SWWyPwYX2ebKSu");
+  // MqttService? _mqtt;
+  // final _mqtt = MqttService(
+  //     broker: "192.168.233.23",
+  //     clientId: "abex-mobile-1",
+  //     username: "abex-mobile-1",
+  //     password: "Q9SWWyPwYX2ebKSu");
+
+  // _MyHomePageState() {
+  //   final config = _storage.readConfig();
+  //   _mqtt = MqttService(
+  //     broker: config["broker"],
+  //     clientId: config["clientId"],
+  //     username: config["username"],
+  //     password: config["password"],
+  //   );
+  // }
 
   void _incrementCounter() {
     setState(() {

@@ -192,8 +192,9 @@ class MqttService extends EventEmitter {
 
         final message = (msg.payload as MqttPublishMessage).payload.message;
         final json = MqttPublishPayload.bytesToStringAsString(message);
+        final JsonDynamic map = jsonDecode(json);
 
-        emit("received", null, {"topic": msg.topic, "json": json});
+        emit("received", null, {"topic": msg.topic, "map": map});
       } on Exception catch (e) {
         // } on Exception {
         print(e);
@@ -205,7 +206,7 @@ class MqttService extends EventEmitter {
     return true;
   }
 
-  void publishMap(Json map) {
+  void publishMap(JsonDynamic map) {
     if (!_accepted) return;
     print("//MQ publishMap, $map");
     publishJson(jsonEncode(map));

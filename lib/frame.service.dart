@@ -16,20 +16,6 @@ class FrameService {
   static final FrameService _singleton = FrameService._internal();
 
   factory FrameService() {
-    // var topic = "abex-basen-1/r/all";
-    // var json =
-    //     '{"params":{"vw0":237,"vw2":364,"v100":1,"v101":1,"v102":1,"v103":1}}';
-    // _singleton.mqttService
-    //     .emit("received", null, {"topic": topic, "json": json});
-    // print(_singleton.getGetTemperaturaWodyC());
-    // print(_singleton.getGetTemperaturaOtoczeniaC());
-    // print(_singleton.getSetOswietlenie());
-    // _singleton.setSetTWodyTestC(23.4);
-    // _singleton.setSetTOtoczTestC(28.9);
-    // _singleton.setSetPWodyTestCm(180);
-    // _singleton.setSetSendAll();
-    // _singleton.setSetSendAll();
-    // _singleton.setSetSendAll();
     return _singleton;
   }
 
@@ -145,24 +131,22 @@ class FrameService {
   }
 
   void received(Event ev) {
-    final data = ev.eventData as Map<String, String>;
-    // final topic = data["topic"] ?? "";
-    // final json = data["json"] ?? "";
+    final data = ev.eventData as Map<String, JsonDynamic>;
+    // final map = data["map"] ?? {};
     // print("//FS topic: $topic, json: '$json'");
-    print("//FS received");
-    final json = data["json"] ?? "";
-    _singleton.update(json);
+    final topic = data["topic"] ?? "";
+    print("//FS received().topic $topic");
+    final map = data["map"] ?? {} as JsonDynamic;
+    _singleton.update(map);
   }
 
-  void update(String json) {
+  void update(JsonDynamic map) {
     try {
-      final paramsMap = (jsonDecode(json))["params"] as Json;
-      print(paramsMap);
+      final paramsMap = (map["params"] ?? {}) as JsonDynamic;
+      print("//FS update().params $paramsMap");
       paramsMap.forEach((key, val) {
-        // Update only expected values
-        if (params.containsKey(key)) {
-          params[key] = val;
-        }
+        /// Update only expected values
+        if (params.containsKey(key)) params[key] = val;
       });
       print(params);
     } on Exception catch (e) {
