@@ -120,9 +120,14 @@ class FrameService {
   setSetPWodyTestCm(double value) =>
       publishDouble(VMap.setPWodyTest, (value + 50) / 0.25 + .5);
 
-  void ready() {
-    print("//FS ready");
+  int refresh(int test) {
     setSetSendAll();
+    return ++test;
+  }
+
+  void ready() {
+    print("//FS ready()");
+    setSetSendAll(); //TODO timer loop to call it until it will bring data
     //TEST
     setSetOswietlenieH();
     _singleton.setSetTWodyTestC(23.4);
@@ -131,24 +136,21 @@ class FrameService {
   }
 
   void received(Event ev) {
-    final data = ev.eventData as Map<String, JsonDynamic>;
-    // final map = data["map"] ?? {};
-    // print("//FS topic: $topic, json: '$json'");
+    final data = ev.eventData as Map;
     final topic = data["topic"] ?? "";
-    print("//FS received().topic $topic");
-    final map = data["map"] ?? {} as JsonDynamic;
+    final map = (data["map"] ?? {}) as JsonDynamic;
+    print('//FS received() "$topic" "$map"');
     _singleton.update(map);
   }
 
   void update(JsonDynamic map) {
     try {
       final paramsMap = (map["params"] ?? {}) as JsonDynamic;
-      print("//FS update().params $paramsMap");
+      print('//FS update() params: "$paramsMap"');
       paramsMap.forEach((key, val) {
         /// Update only expected values
         if (params.containsKey(key)) params[key] = val;
       });
-      print(params);
     } on Exception catch (e) {
       print(e);
       // emit("error", null, "Receive failed"); //ograc to?
