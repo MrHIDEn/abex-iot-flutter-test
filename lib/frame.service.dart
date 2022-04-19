@@ -75,26 +75,6 @@ class FrameService  {
   bool getGetAtrakcja() => params[VMap.getAtrakcja]! == 1;
   bool getGetGrzanie() => params[VMap.getGrzanie]! == 1;
 
-  // final Map<String, Function> values = {
-  //   VMap.getTWody: _singleton.getGetTemperaturaWodyC,
-  //   VMap.getTOtocz: _singleton.getGetTemperaturaOtoczeniaC,
-  //   VMap.getPWody: _singleton.getGetPoziomWodyCm,
-  //   VMap.setTWody: _singleton.getSetTemperaturaWodyC,
-  //
-  //   VMap.setTOtocz: _singleton.getSetTemperaturaOtoczeniaC,
-  //   VMap.setOswietlenie: _singleton.getSetOswietlenie,
-  //   VMap.setRoleta: _singleton.getSetRoleta,
-  //   VMap.setFiltr: _singleton.getSetFiltr,
-  //
-  //   VMap.setAtrakcja: _singleton.getSetAtrakcja,
-  //   VMap.setGrzanie: _singleton.getSetGrzanie,
-  //   VMap.getOswietlenie: _singleton.getGetOswietlenie,
-  //   VMap.getRoleta: _singleton.getGetRoleta,
-  //
-  //   VMap.getFiltr: _singleton.getGetFiltr,
-  //   VMap.getAtrakcja: _singleton.getGetAtrakcja,
-  //   VMap.getGrzanie: _singleton.getGetGrzanie,
-  // };
 
   setSetTemperaturaWodyC(double value) =>
       publishDouble(VMap.setTWody, 10.0 * value);

@@ -67,8 +67,6 @@ class MyHomePage extends StatefulWidget {
   final _frame = FrameService();
 
   final String title;
-  // final String tWodyC = "0";
-  // double get tWodyC => _frame.getGetTemperaturaWodyC();
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -77,9 +75,24 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final _storage = StorageService();
   final _frame = FrameService();
-  
+
+  // Fields
   int _counter = 0;
-  double _tWodyC = 0;
+  double getTWody = 0.0;
+  double getTOtocz = 0.0;
+  double getPWody = 0.0;
+  double setTWody = 0.0;
+  double setTOtocz = 0.0;
+  bool setOswietlenie = false;
+  bool setRoleta = false;
+  bool setFiltr = false;
+  bool setAtrakcja = false;
+  bool setGrzanie = false;
+  bool getOswietlenie = false;
+  bool getRoleta = false;
+  bool getFiltr = false;
+  bool getAtrakcja = false;
+  bool getGrzanie = false;
 
   // MqttService? _mqtt;
   // final _mqtt = MqttService(
@@ -112,7 +125,21 @@ class _MyHomePageState extends State<MyHomePage> {
   void onUpdated() {
     print('//MH on updated');
     setState(() {
-      _tWodyC = _frame.getGetTemperaturaWodyC();
+      getTWody = _frame.getGetTemperaturaWodyC();
+      getTOtocz = _frame.getGetTemperaturaOtoczeniaC();
+      getPWody = _frame.getGetPoziomWodyCm();
+      setTWody = _frame.getSetTemperaturaWodyC();
+      setTOtocz = _frame.getSetTemperaturaOtoczeniaC();
+      setOswietlenie = _frame.getSetOswietlenie();
+      setRoleta = _frame.getSetRoleta();
+      setFiltr = _frame.getSetFiltr();
+      setAtrakcja = _frame.getSetAtrakcja();
+      setGrzanie = _frame.getSetGrzanie();
+      getOswietlenie = _frame.getGetOswietlenie();
+      getRoleta = _frame.getGetRoleta();
+      getFiltr = _frame.getGetFiltr();
+      getAtrakcja = _frame.getGetAtrakcja();
+      getGrzanie = _frame.getGetGrzanie();
     });
   }
 
@@ -172,17 +199,68 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             //--
             Text(
-              'Temp. Wody: ${_frame.getGetTemperaturaWodyC()},',
+              'Temp. Wody: $getTWody,',
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             Text(
-              'Temp. Wody: $_tWodyC,',
+              'Temp. Otocz: $getTOtocz,',
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
+            Text(
+              'Poziom. Wody: $getPWody,',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            //--
+            Text(
+              'Nas. Temp. Wody: $setTWody,',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Nas. Temp. Otocz: $setTOtocz,',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            //--
+            Text(
+              'Oswietlenie: ${getOswietlenie ? "ON" : "OFF"},',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Roleta: ${getRoleta ? "ON" : "OFF"},',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Filtr: ${getFiltr ? "ON" : "OFF"},',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Atrakcja: ${getAtrakcja ? "ON" : "OFF"},',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Grzanie: ${getGrzanie ? "ON" : "OFF"},',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            //--
             ElevatedButton(
               onPressed: () {
                 _frame.refresh(0);
@@ -196,7 +274,10 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Text(
               '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .headline4,
             ),
           ],
         ),
